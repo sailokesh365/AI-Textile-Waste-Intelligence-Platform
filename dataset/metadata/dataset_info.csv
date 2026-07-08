@@ -1,0 +1,4 @@
+Dataset,Type,Images
+Fashion-MNIST,Clothing Classification,70000
+DeepFashion,Fashion Images,800000+
+Fabric Images,Fabric Recognition,Variable
