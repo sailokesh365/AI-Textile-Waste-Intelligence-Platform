@@ -18,6 +18,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Request logger middleware
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] Incoming Request: ${req.method} ${req.originalUrl}`);
+  next();
+});
+
 // Serve Static Uploaded Images
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 

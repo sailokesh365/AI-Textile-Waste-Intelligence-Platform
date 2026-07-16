@@ -13,6 +13,8 @@ const classifyImage = async (req, res) => {
       });
     }
 
+    console.log(`[${new Date().toISOString()}] AI Classification initiated for file: ${req.file.originalname} (${req.file.size} bytes)`);
+
     // Run AI preprocessing and material classification
     const analysisResult = await classifyTextileImage(req.file);
 

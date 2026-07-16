@@ -44,9 +44,6 @@ const ImageAnalysisPage = () => {
       formData.append("image", selectedFile);
 
       const response = await axiosInstance.post("/analysis/classify", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
         onUploadProgress: (progressEvent) => {
           if (progressEvent.total) {
             const percentCompleted = Math.round(
@@ -99,7 +96,7 @@ const ImageAnalysisPage = () => {
                 AI Textile Image Analysis Engine
               </h1>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
-                Milestone 2 AI Core
+                Enterprise Edition
               </span>
             </div>
             <p className="text-sm text-slate-600 mt-1">

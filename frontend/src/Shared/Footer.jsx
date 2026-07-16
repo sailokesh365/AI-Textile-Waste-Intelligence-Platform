@@ -49,13 +49,13 @@ const Footer = () => {
             </h4>
             <ul className="space-y-2.5 text-sm">
               <li>
-                <span className="text-slate-400">Milestone 1 Core System</span>
+                <span className="text-slate-400">Global Recycled Standard</span>
               </li>
               <li>
                 <span className="text-slate-400">Circular Textile Standards</span>
               </li>
               <li>
-                <span className="text-slate-400">Dataset Governance v1.0</span>
+                <span className="text-slate-400">Enterprise Data Governance</span>
               </li>
             </ul>
           </div>
