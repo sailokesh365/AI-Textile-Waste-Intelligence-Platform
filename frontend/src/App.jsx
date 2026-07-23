@@ -9,6 +9,9 @@ import Register from "./Authentication/Register";
 import Profile from "./Authentication/Profile";
 import InventoryDashboard from "./Inventory/InventoryDashboard";
 import ImageAnalysisPage from "./Analysis/ImageAnalysisPage";
+import HistoryPage from "./Analysis/HistoryPage";
+import Dashboard from "./Dashboard/Dashboard";
+import AnalysisReport from "./Analysis/AnalysisReport";
 
 export default function App() {
   return (
@@ -39,6 +42,30 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <ImageAnalysisPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/history"
+            element={
+              <ProtectedRoute>
+                <HistoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/report/:id"
+            element={
+              <ProtectedRoute>
+                <AnalysisReport />
               </ProtectedRoute>
             }
           />

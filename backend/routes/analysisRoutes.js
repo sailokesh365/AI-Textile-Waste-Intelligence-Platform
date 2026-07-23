@@ -6,6 +6,9 @@ const { protect } = require("../middleware/authMiddleware");
 const {
   classifyImage,
   getSupportedMaterials,
+  getRecentAnalyses,
+  getAnalysisById,
+  getDashboardStats,
 } = require("../controllers/analysisController");
 
 // Configure Multer Disk Storage for Temporary Image Preservation
@@ -77,4 +80,20 @@ router.post(
 // @access  Protected
 router.get("/materials", protect, getSupportedMaterials);
 
+// @route   GET /api/analysis/history
+// @desc    Get user's past analyses
+// @access  Protected
+router.get("/history", protect, getRecentAnalyses);
+
+// @route   GET /api/analysis/dashboard-stats
+// @desc    Get dashboard stats
+// @access  Protected
+router.get("/dashboard-stats", protect, getDashboardStats);
+
+// @route   GET /api/analysis/:id
+// @desc    Get analysis record by ID
+// @access  Protected
+router.get("/:id", protect, getAnalysisById);
+
 module.exports = router;
+

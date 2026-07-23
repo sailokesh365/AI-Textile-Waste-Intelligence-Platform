@@ -31,6 +31,12 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/auth", authRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api/analysis", analysisRoutes);
+app.use("/api/upload", require("./routes/uploadRoutes"));
+app.use("/api/analyze", require("./routes/analyzeRoutes"));
+app.use("/api/materials", require("./routes/materialsRoutes"));
+app.use("/api/classification", require("./routes/classificationRoutes"));
+app.use("/api/predict", require("./routes/predictRoutes"));
+app.use("/api/history", require("./routes/historyRoutes"));
 
 // Health check route
 app.get("/api/health", (req, res) => {

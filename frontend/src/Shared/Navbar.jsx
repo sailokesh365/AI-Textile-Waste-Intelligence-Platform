@@ -47,6 +47,9 @@ const Navbar = () => {
             <Link to="/inventory" className={navLinkClass("/inventory")}>
               Inventory Portal
             </Link>
+            <Link to="/dashboard" className={navLinkClass("/dashboard")}>
+              Analytics Dashboard
+            </Link>
           </nav>
 
           <div className="flex items-center space-x-3">

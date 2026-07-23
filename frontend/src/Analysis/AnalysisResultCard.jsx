@@ -7,7 +7,8 @@ const AnalysisResultCard = ({ result, onReset }) => {
   if (!result || !result.prediction) return null;
 
   const { prediction, materialInfo, imageUrl, uploadedFile } = result;
-  const confidence = prediction.confidenceScore || 0;
+  const confidence = prediction.confidenceScore || prediction.materialConfidence || 0;
+  const recordId = result._id || prediction._id;
 
   // Determine color theme based on confidence percentage
   const getConfidenceBadgeStyle = (score) => {
@@ -17,6 +18,21 @@ const AnalysisResultCard = ({ result, onReset }) => {
       return "bg-blue-100 text-blue-800 border-blue-300";
     } else {
       return "bg-amber-100 text-amber-800 border-amber-300";
+    }
+  };
+
+  const getRecyclabilityBadge = (grade) => {
+    switch (grade) {
+      case "Green":
+        return "bg-green-100 text-green-850 border-green-250";
+      case "Yellow":
+        return "bg-yellow-100 text-yellow-850 border-yellow-250";
+      case "Orange":
+        return "bg-amber-100 text-amber-850 border-amber-250";
+      case "Red":
+        return "bg-red-100 text-red-850 border-red-250";
+      default:
+        return "bg-slate-100 text-slate-800 border-slate-200";
     }
   };
 
@@ -44,6 +60,12 @@ const AnalysisResultCard = ({ result, onReset }) => {
     });
   };
 
+  const handleViewReport = () => {
+    if (recordId) {
+      navigate(`/report/${recordId}`);
+    }
+  };
+
   return (
     <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden animate-fadeIn">
       {/* Top Banner */}
@@ -58,7 +80,7 @@ const AnalysisResultCard = ({ result, onReset }) => {
         </div>
         <div className="flex items-center space-x-3 text-xs font-medium text-slate-300">
           <span className="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700">
-            ⏱️ {prediction.processingTime || "280ms"}
+            ⏱️ {prediction.processingTime || "FastAPI Pipeline"}
           </span>
           <span className="px-2.5 py-1 rounded-lg bg-green-900/60 text-green-300 border border-green-700 font-semibold">
             ● {prediction.predictionStatus || "Completed"}
@@ -112,6 +134,24 @@ const AnalysisResultCard = ({ result, onReset }) => {
               </p>
             </div>
 
+            {/* Waste and Recyclability summary row */}
+            <div className="grid grid-cols-2 gap-4 border-t border-slate-200 pt-4">
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Waste Stream</p>
+                <p className="text-base font-bold text-slate-800 mt-0.5">{prediction.wasteCategory}</p>
+                <p className="text-[10px] text-slate-500 mt-0.5">Cert: {prediction.wasteConfidence}%</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Recyclability</p>
+                <div className="flex items-center space-x-2 mt-0.5">
+                  <span className="text-base font-bold text-slate-800">{prediction.recyclabilityScore}%</span>
+                  <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold border ${getRecyclabilityBadge(prediction.recyclabilityGrade)}`}>
+                    {prediction.recyclabilityGrade}
+                  </span>
+                </div>
+              </div>
+            </div>
+
             {/* Confidence Bar */}
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-semibold text-slate-700">
@@ -126,22 +166,131 @@ const AnalysisResultCard = ({ result, onReset }) => {
               </div>
             </div>
 
+            {/* Top Predictions Bar / Alternatives */}
+            {result.topPredictions && result.topPredictions.length > 0 && (
+              <div className="space-y-2 pt-3 border-t border-slate-200/60">
+                <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Top Alternative Predictions</h5>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {result.topPredictions.map((pred, idx) => (
+                    <div key={idx} className="bg-white border border-slate-200/80 p-2.5 rounded-xl shadow-2xs text-xs">
+                      <div className="flex justify-between font-semibold text-slate-700">
+                        <span>{pred.material}</span>
+                        <span>{pred.confidence}%</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-slate-150 rounded-full mt-1.5 overflow-hidden">
+                        <div className="h-full bg-blue-500 rounded-full" style={{ width: `${pred.confidence}%` }}></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Quick Actions inside Prediction Block */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
+              {recordId && (
+                <button
+                  type="button"
+                  onClick={handleViewReport}
+                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-sm transition text-xs sm:text-sm flex items-center space-x-2"
+                >
+                  <span>📋 View Detailed Report</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleRegisterBatch}
-                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-sm transition text-xs sm:text-sm flex items-center space-x-2"
+                className="px-4 py-2.5 bg-slate-100 hover:bg-slate-250 text-slate-700 font-semibold rounded-xl border border-slate-350 transition text-xs sm:text-sm"
               >
-                <span>+ Log as Inventory Batch</span>
+                + Log as Inventory Batch
               </button>
               <button
                 type="button"
                 onClick={onReset}
                 className="px-4 py-2.5 bg-white hover:bg-slate-100 text-slate-700 font-medium rounded-xl border border-slate-300 transition text-xs sm:text-sm"
               >
-                Analyze Another Sample
+                Clear
               </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Textile Image Analysis Diagnostics */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+          {/* Fabric & Texture Analysis */}
+          <div className="bg-slate-50/50 border border-slate-200 p-5 rounded-2xl shadow-xs space-y-4">
+            <div className="flex items-center space-x-2.5">
+              <span className="text-base">🧶</span>
+              <h4 className="text-sm font-bold text-slate-900">Fabric & Texture</h4>
+            </div>
+            <div className="space-y-3 text-xs">
+              <div>
+                <p className="text-[10px] uppercase font-bold text-slate-400">Fabric Structure</p>
+                <p className="text-slate-700 font-semibold mt-0.5">{result.fabricDetection || "Woven Structure"}</p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase font-bold text-slate-400">Surface Texture</p>
+                <p className="text-slate-650 mt-0.5 leading-relaxed">{result.textureAnalysis || "Consistent surface pattern."}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Color Analysis */}
+          <div className="bg-slate-50/50 border border-slate-200 p-5 rounded-2xl shadow-xs space-y-4">
+            <div className="flex items-center space-x-2.5">
+              <span className="text-base">🎨</span>
+              <h4 className="text-sm font-bold text-slate-900">Color Palette</h4>
+            </div>
+            <div className="space-y-3 text-xs">
+              <div>
+                <p className="text-[10px] uppercase font-bold text-slate-400">Dominant Colors</p>
+                <div className="flex flex-wrap items-center gap-2 mt-1">
+                  {result.colorAnalysis?.dominantColors?.map((color, idx) => (
+                    <div key={idx} className="flex items-center space-x-1.5 border border-slate-200 px-1.5 py-0.5 rounded-lg bg-white shadow-2xs">
+                      <span className="w-3 h-3 rounded-full inline-block border border-slate-300" style={{ backgroundColor: color }}></span>
+                      <span className="font-mono text-[9px] text-slate-650 font-bold">{color}</span>
+                    </div>
+                  )) || <span className="text-slate-500">None detected</span>}
+                </div>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase font-bold text-slate-400">Palette Details</p>
+                <p className="text-slate-650 mt-0.5 leading-relaxed">{result.colorAnalysis?.paletteDescription || "No palette data."}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Damage & Contamination */}
+          <div className="bg-slate-50/50 border border-slate-200 p-5 rounded-2xl shadow-xs space-y-4">
+            <div className="flex items-center space-x-2.5">
+              <span className="text-base">🔍</span>
+              <h4 className="text-sm font-bold text-slate-900">Diagnostics & Wear</h4>
+            </div>
+            <div className="space-y-3 text-xs">
+              <div>
+                <p className="text-[10px] uppercase font-bold text-slate-400">Damage Detection</p>
+                {result.damageDetection?.damageDetected ? (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 mt-1 rounded bg-red-50 text-red-700 border border-red-200 font-semibold text-[10px]">
+                    ⚠️ {result.damageDetection.damageType} ({result.damageDetection.damageSeverity} Severity)
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 mt-1 rounded bg-green-50 text-green-700 border border-green-200 font-semibold text-[10px]">
+                    ✓ No Damage Detected
+                  </span>
+                )}
+              </div>
+              <div>
+                <p className="text-[10px] uppercase font-bold text-slate-400">Contamination Detection</p>
+                {result.contaminationDetection?.contaminationDetected ? (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 mt-1 rounded bg-amber-50 text-amber-700 border border-amber-200 font-semibold text-[10px]">
+                    ⚠️ {result.contaminationDetection.contaminationType} ({result.contaminationDetection.contaminationSeverity} Severity)
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 mt-1 rounded bg-green-50 text-green-700 border border-green-200 font-semibold text-[10px]">
+                    ✓ No Contaminants Detected
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
