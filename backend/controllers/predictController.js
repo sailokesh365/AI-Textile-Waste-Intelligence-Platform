@@ -3,6 +3,7 @@ const UploadedImage = require("../models/UploadedImage");
 const MaterialClassification = require("../models/MaterialClassification");
 const WasteClassification = require("../models/WasteClassification");
 const { classifyTextileImage, SUPPORTED_MATERIALS } = require("../services/aiService");
+const sustainabilityService = require("../sustainability/services/sustainabilityService");
 
 // @desc    Upload textile image and run prediction in a single API call
 // @route   POST /api/predict
@@ -18,16 +19,7 @@ const predictImage = async (req, res) => {
 
     const imageUrl = `/uploads/${req.file.filename}`;
 
-    // 1. Save uploaded image metadata
-    const uploadedImage = await UploadedImage.create({
-      imagePath: imageUrl,
-      originalName: req.file.originalname,
-      mimeType: req.file.mimetype,
-      size: req.file.size,
-      createdBy: req.user._id,
-    });
-
-    // 2. Reconstruct file structure for aiService
+    // 1. Reconstruct file structure for aiService
     const file = {
       path: req.file.path,
       filename: req.file.filename,
@@ -36,8 +28,18 @@ const predictImage = async (req, res) => {
       size: req.file.size,
     };
 
-    // 3. Execute AI classification
+    // 2. Execute AI classification
     const analysisResult = await classifyTextileImage(file);
+
+    // 3. Save uploaded image metadata including preprocessedImagePath
+    const uploadedImage = await UploadedImage.create({
+      imagePath: imageUrl,
+      preprocessedImagePath: analysisResult.preprocessedImagePath,
+      originalName: req.file.originalname,
+      mimeType: req.file.mimetype,
+      size: req.file.size,
+      createdBy: req.user._id,
+    });
 
     let finalMaterialName = analysisResult.prediction.predictedMaterial;
     if (finalMaterialName === "Mixed Fabrics") {
@@ -79,30 +81,28 @@ const predictImage = async (req, res) => {
       createdBy: req.user._id,
     });
 
-    // Calculate Top Predictions
+    // 6. Save Sustainability Analysis Record in MongoDB
+    let sustainabilityRecord = null;
+    const batchQuantity = req.body.quantity ? parseFloat(req.body.quantity) : 1;
+    try {
+      sustainabilityRecord = await sustainabilityService.analyzeSustainability({
+        material: finalMaterialName,
+        condition: analysisResult.prediction.condition || "Good / Moderate Use",
+        quantity: batchQuantity,
+        recyclability: wasteClassification.wasteCategory === "Reusable" ? "Reusable" : "Mechanical Recycling",
+        wasteCategory: wasteClassification.wasteCategory,
+        createdBy: req.user._id,
+        uploadedImage: uploadedImage._id,
+      });
+    } catch (sustErr) {
+      console.warn("Predict Sustainability Persistence Warning:", sustErr.message);
+    }
+
+    // Top Predictions from AI model
     const materialConfidence = analysisResult.prediction.materialConfidence;
-    const topPredictions = [
+    const topPredictions = analysisResult.prediction.topPredictions || [
       { material: finalMaterialName, confidence: materialConfidence },
     ];
-    
-    // Add other classes to complete top predictions array
-    const otherClasses = SUPPORTED_MATERIALS.map(m => m === "Mixed Fabrics" ? "Mixed Fabric" : m).filter(
-      (m) => m !== finalMaterialName
-    );
-    const remainingConf = 100 - materialConfidence;
-    if (remainingConf > 0) {
-      topPredictions.push({
-        material: otherClasses[0],
-        confidence: parseFloat((remainingConf * 0.7).toFixed(1)),
-      });
-      topPredictions.push({
-        material: otherClasses[1],
-        confidence: parseFloat((remainingConf * 0.3).toFixed(1)),
-      });
-    } else {
-      topPredictions.push({ material: otherClasses[0], confidence: 0.0 });
-      topPredictions.push({ material: otherClasses[1], confidence: 0.0 });
-    }
 
     res.status(200).json({
       success: true,
@@ -117,6 +117,7 @@ const predictImage = async (req, res) => {
         reusePotential: wasteClassification.reusePotential,
         disposalRecommendation: wasteClassification.disposalRecommendation,
         preprocessedImageUrl: analysisResult.preprocessedImagePath,
+        preprocessedImagePath: analysisResult.preprocessedImagePath,
         imageUrl,
         recommendations: analysisResult.recommendations,
         fabricDetection: materialClassification.fabricDetection,
@@ -124,6 +125,7 @@ const predictImage = async (req, res) => {
         colorAnalysis: materialClassification.colorAnalysis,
         damageDetection: wasteClassification.damageDetection,
         contaminationDetection: wasteClassification.contaminationDetection,
+        sustainabilityAnalysis: sustainabilityRecord,
         uploadedFile: {
           filename: req.file.filename,
           originalname: req.file.originalname,

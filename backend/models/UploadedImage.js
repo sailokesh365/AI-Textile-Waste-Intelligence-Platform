@@ -6,6 +6,9 @@ const uploadedImageSchema = new mongoose.Schema(
       type: String,
       required: [true, "Image path is required"],
     },
+    preprocessedImagePath: {
+      type: String,
+    },
     originalName: {
       type: String,
       required: [true, "Original filename is required"],

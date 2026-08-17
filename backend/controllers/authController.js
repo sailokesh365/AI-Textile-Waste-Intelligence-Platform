@@ -18,18 +18,31 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: "Please provide name, email, and password" });
     }
 
-    const existingUser = await User.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(normalizedEmail)) {
+      return res.status(400).json({ message: "Please provide a valid email address" });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({ message: "Password must be at least 8 characters long" });
+    }
+
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // New users default to "User" role by default
+    const userRole = role === "Admin" ? "Admin" : "User";
+
     const user = await User.create({
-      name,
-      email,
+      name: name.trim(),
+      email: normalizedEmail,
       password: hashedPassword,
-      role: role || "User",
+      role: userRole,
     });
 
     const token = generateToken(user._id, user.role);
@@ -57,7 +70,9 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ message: "Please provide email and password" });
     }
 
-    const user = await User.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
@@ -123,9 +138,78 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "Please provide your email address." });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
+    if (!user) {
+      return res.status(200).json({
+        message: "If an account exists with that email, password reset instructions have been issued.",
+      });
+    }
+
+    const resetToken = jwt.sign(
+      { id: user._id, type: "password_reset" },
+      process.env.JWT_SECRET || "TextileWaste@2026",
+      { expiresIn: "15m" }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Password reset instructions issued. Use the token to reset your password.",
+      resetToken,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { resetToken, email, newPassword } = req.body;
+
+    if (!newPassword || newPassword.length < 8) {
+      return res.status(400).json({ message: "New password must be at least 8 characters long." });
+    }
+
+    let user = null;
+    if (resetToken) {
+      const decoded = jwt.verify(resetToken, process.env.JWT_SECRET || "TextileWaste@2026");
+      if (decoded.type !== "password_reset") {
+        return res.status(400).json({ message: "Invalid reset token." });
+      }
+      user = await User.findById(decoded.id);
+    } else if (email) {
+      const normalizedEmail = email.trim().toLowerCase();
+      user = await User.findOne({ email: normalizedEmail });
+    }
+
+    if (!user) {
+      return res.status(404).json({ message: "User account not found." });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Password reset successfully. You can now sign in with your new password.",
+    });
+  } catch (error) {
+    return res.status(400).json({ message: error.message || "Invalid or expired reset token." });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   getUserProfile,
   updateUserProfile,
+  forgotPassword,
+  resetPassword,
 };

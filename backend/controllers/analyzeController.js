@@ -27,6 +27,13 @@ const analyzeImage = async (req, res) => {
       });
     }
 
+    if (uploadedImage.createdBy && uploadedImage.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to analyze this uploaded image.",
+      });
+    }
+
     // Reconstruct the file object structure expected by aiService.js
     const filename = uploadedImage.imagePath.replace("/uploads/", "");
     const file = {

@@ -37,6 +37,10 @@ app.use("/api/materials", require("./routes/materialsRoutes"));
 app.use("/api/classification", require("./routes/classificationRoutes"));
 app.use("/api/predict", require("./routes/predictRoutes"));
 app.use("/api/history", require("./routes/historyRoutes"));
+app.use("/api/sustainability", require("./sustainability/routes/sustainabilityRoutes"));
+app.use("/api/recommendation", require("./recommendation/routes/recommendationRoutes"));
+
+
 
 // Health check route
 app.get("/api/health", (req, res) => {

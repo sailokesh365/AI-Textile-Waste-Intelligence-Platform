@@ -4,6 +4,7 @@ const { protect } = require("../middleware/authMiddleware");
 const {
   getClassifications,
   getClassificationById,
+  deleteHistoryRecord,
 } = require("../controllers/classificationController");
 
 // @route   GET /api/classification
@@ -15,5 +16,10 @@ router.get("/", protect, getClassifications);
 // @desc    Get populated classification record details by ID
 // @access  Protected
 router.get("/:id", protect, getClassificationById);
+
+// @route   DELETE /api/classification/:id
+// @desc    Delete classification record details by ID
+// @access  Protected
+router.delete("/:id", protect, deleteHistoryRecord);
 
 module.exports = router;

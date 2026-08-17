@@ -32,13 +32,35 @@ def predict_textile(image_bytes):
     pipeline = get_pipeline()
     result = pipeline.predict(image_bytes)
 
-    # Convert resized visual to base64 for preview in UI
+    # OpenCV Preprocessing Visual Generation (Bilateral Denoising + Canny Edge Extraction)
     nparr = np.frombuffer(image_bytes, np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
     if img is not None:
         target_w, target_h = pipeline.config.get("input_shape", [224, 224])[0:2]
-        img_resized = cv2.resize(img, (target_w, target_h))
-        _, buffer = cv2.imencode('.png', img_resized)
+        img_resized = cv2.resize(img, (target_w, target_h), interpolation=cv2.INTER_AREA)
+        
+        # 1. Bilateral Denoising Filter
+        denoised = cv2.bilateralFilter(img_resized, 9, 75, 75)
+        
+        # 2. Grayscale & CLAHE Contrast Equalization
+        gray = cv2.cvtColor(denoised, cv2.COLOR_BGR2GRAY)
+        clahe = cv2.createCLAHE(clipLimit=2.5, tileGridSize=(8, 8))
+        equalized = clahe.apply(gray)
+        
+        # 3. Canny Edge Feature Extraction
+        edges = cv2.Canny(equalized, 50, 150)
+        
+        # 4. Green edge contour overlay matrix
+        edge_overlay = np.zeros_like(img_resized)
+        edge_overlay[edges > 0] = [0, 255, 100]
+        
+        equalized_bgr = cv2.cvtColor(equalized, cv2.COLOR_GRAY2BGR)
+        preprocessed_visual = cv2.addWeighted(equalized_bgr, 0.70, edge_overlay, 0.30, 0)
+        
+        # 5. Burn OpenCV feature tag into visual frame
+        cv2.putText(preprocessed_visual, "OPENCV PREPROCESSED", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 120), 1, cv2.LINE_AA)
+        
+        _, buffer = cv2.imencode('.png', preprocessed_visual)
         preprocessed_base64 = base64.b64encode(buffer).decode('utf-8')
     else:
         preprocessed_base64 = ""

@@ -10,6 +10,7 @@ const {
   getAnalysisById,
   getDashboardStats,
 } = require("../controllers/analysisController");
+const { deleteHistoryRecord } = require("../controllers/classificationController");
 
 // Configure Multer Disk Storage for Temporary Image Preservation
 const storage = multer.diskStorage({
@@ -94,6 +95,11 @@ router.get("/dashboard-stats", protect, getDashboardStats);
 // @desc    Get analysis record by ID
 // @access  Protected
 router.get("/:id", protect, getAnalysisById);
+
+// @route   DELETE /api/analysis/:id
+// @desc    Delete analysis record by ID
+// @access  Protected
+router.delete("/:id", protect, deleteHistoryRecord);
 
 module.exports = router;
 

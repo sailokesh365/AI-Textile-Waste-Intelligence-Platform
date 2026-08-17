@@ -33,10 +33,11 @@ def create_augmentation_layer():
     """Returns Keras sequential preprocessing layer for data augmentation."""
     return tf.keras.Sequential([
         tf.keras.layers.RandomFlip("horizontal_and_vertical"),
-        tf.keras.layers.RandomRotation(0.2),
-        tf.keras.layers.RandomZoom(0.15),
+        tf.keras.layers.RandomRotation(0.25),
+        tf.keras.layers.RandomZoom(0.20),
         tf.keras.layers.RandomTranslation(0.1, 0.1),
-        tf.keras.layers.RandomContrast(0.1)
+        tf.keras.layers.RandomContrast(0.15),
+        tf.keras.layers.RandomBrightness(0.1)
     ], name="data_augmentation")
 
 class PreprocessingPipeline:
@@ -48,6 +49,21 @@ class PreprocessingPipeline:
         self.normalize = normalize
         self.classes = CLASSES
 
+    def apply_advanced_preprocessing(self, img_bgr):
+        """Applies Bilateral Denoising and CLAHE contrast equalization."""
+        # 1. Bilateral Denoising Filter
+        denoised = cv2.bilateralFilter(img_bgr, 5, 50, 50)
+        
+        # 2. CLAHE Contrast Equalization in LAB Color Space
+        lab = cv2.cvtColor(denoised, cv2.COLOR_BGR2LAB)
+        l, a, b = cv2.split(lab)
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        cl = clahe.apply(l)
+        limg = cv2.merge((cl, a, b))
+        enhanced_bgr = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
+        
+        return enhanced_bgr
+
     def preprocess_image_file(self, image_path):
         """Loads and preprocesses a single image file from disk."""
         if not os.path.exists(image_path):
@@ -57,7 +73,8 @@ class PreprocessingPipeline:
         if img is None:
             raise ValueError(f"Corrupted or invalid image file: {image_path}")
             
-        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        enhanced_bgr = self.apply_advanced_preprocessing(img)
+        img_rgb = cv2.cvtColor(enhanced_bgr, cv2.COLOR_BGR2RGB)
         img_resized = cv2.resize(img_rgb, self.target_size, interpolation=cv2.INTER_AREA)
         
         if self.normalize:
@@ -74,7 +91,8 @@ class PreprocessingPipeline:
         if img is None:
             raise ValueError("Failed to decode image bytes. Supported formats are PNG, JPG, and JPEG.")
             
-        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        enhanced_bgr = self.apply_advanced_preprocessing(img)
+        img_rgb = cv2.cvtColor(enhanced_bgr, cv2.COLOR_BGR2RGB)
         img_resized = cv2.resize(img_rgb, self.target_size, interpolation=cv2.INTER_AREA)
         
         if self.normalize:
@@ -183,13 +201,13 @@ def load_and_preprocess_aitex(dataset_dir="dataset/AITEX", target_size=(224, 224
     y = np.array(y_list, dtype=np.int32)
 
     # Perform Stratified 70% Train, 15% Validation, 15% Test split
-    np.random.seed(42)
+    rng = np.random.RandomState(42)
     train_idx, val_idx, test_idx = [], [], []
 
     for c in range(len(CLASSES)):
         c_indices = np.where(y == c)[0]
         if len(c_indices) > 0:
-            np.random.shuffle(c_indices)
+            rng.shuffle(c_indices)
             n_c = len(c_indices)
             n_train = max(1, int(n_c * 0.70))
             n_val = max(1, int(n_c * 0.15))
@@ -198,9 +216,9 @@ def load_and_preprocess_aitex(dataset_dir="dataset/AITEX", target_size=(224, 224
             val_idx.extend(c_indices[n_train:n_train + n_val])
             test_idx.extend(c_indices[n_train + n_val:])
 
-    np.random.shuffle(train_idx)
-    np.random.shuffle(val_idx)
-    np.random.shuffle(test_idx)
+    rng.shuffle(train_idx)
+    rng.shuffle(val_idx)
+    rng.shuffle(test_idx)
 
     X_train, y_train = X[train_idx], y[train_idx]
     X_val, y_val = X[val_idx], y[val_idx]

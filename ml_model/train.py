@@ -27,8 +27,7 @@ def build_mobilenetv3(input_shape=(224, 224, 3), num_classes=10):
         layer.trainable = False
 
     inputs = layers.Input(shape=input_shape)
-    x = create_augmentation_layer()(inputs)
-    x = tf.keras.applications.mobilenet_v3.preprocess_input(x * 255.0)
+    x = layers.Rescaling(1.0 / 127.5, offset=-1.0)(inputs)
     x = base_model(x)
     x = layers.GlobalAveragePooling2D()(x)
     x = layers.BatchNormalization()(x)
@@ -51,7 +50,7 @@ def build_efficientnet(input_shape=(224, 224, 3), num_classes=10):
         layer.trainable = False
 
     inputs = layers.Input(shape=input_shape)
-    x = create_augmentation_layer()(inputs)
+    x = layers.Rescaling(255.0)(inputs) # EfficientNet expects [0, 255]
     x = base_model(x)
     x = layers.GlobalAveragePooling2D()(x)
     x = layers.BatchNormalization()(x)
@@ -63,24 +62,23 @@ def build_efficientnet(input_shape=(224, 224, 3), num_classes=10):
     return model
 
 def build_resnet50(input_shape=(224, 224, 3), num_classes=10):
-    """Builds transfer learning model based on ResNet50."""
-    base_model = tf.keras.applications.ResNet50(
+    """Builds transfer learning model based on ResNet50V2."""
+    base_model = tf.keras.applications.ResNet50V2(
         input_shape=input_shape,
         include_top=False,
         weights='imagenet'
     )
     base_model.trainable = True
-    for layer in base_model.layers[:-20]:
+    for layer in base_model.layers[:-25]:
         layer.trainable = False
 
     inputs = layers.Input(shape=input_shape)
-    x = create_augmentation_layer()(inputs)
-    x = tf.keras.applications.resnet50.preprocess_input(x * 255.0)
+    x = layers.Rescaling(2.0, offset=-1.0)(inputs) # ResNetV2 expects [-1, 1]
     x = base_model(x)
     x = layers.GlobalAveragePooling2D()(x)
     x = layers.BatchNormalization()(x)
     x = layers.Dense(128, activation='relu')(x)
-    x = layers.Dropout(0.4)(x)
+    x = layers.Dropout(0.3)(x)
     outputs = layers.Dense(num_classes, activation='softmax')(x)
 
     model = models.Model(inputs, outputs, name="ResNet50_Transfer")

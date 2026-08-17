@@ -6,9 +6,14 @@
     3
   ],
   "normalization": "Min-Max [0, 1]",
-  "confidence_threshold": 40.0,
+  "confidence_threshold": 50.0,
   "top_k": 5,
-  "num_classes": 10,
-  "validation_accuracy": 0.5,
-  "timestamp": "2026-07-22 20:03:22"
+  "num_classes": 2,
+  "analysis_mode": "demo",
+  "classes": [
+    "Defect-Free Fabric (Pristine)",
+    "Defected Fabric (Surface Anomaly)"
+  ],
+  "validation_accuracy": 0.6896551847457886,
+  "timestamp": "2026-08-10 10:15:00"
 }

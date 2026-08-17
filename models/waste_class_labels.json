@@ -1,0 +1,26 @@
+{
+  "classes": [
+    "Reusable",
+    "Recyclable",
+    "Repairable",
+    "Damaged",
+    "Contaminated",
+    "Landfill"
+  ],
+  "label_to_index": {
+    "Reusable": 0,
+    "Recyclable": 1,
+    "Repairable": 2,
+    "Damaged": 3,
+    "Contaminated": 4,
+    "Landfill": 5
+  },
+  "index_to_label": {
+    "0": "Reusable",
+    "1": "Recyclable",
+    "2": "Repairable",
+    "3": "Damaged",
+    "4": "Contaminated",
+    "5": "Landfill"
+  }
+}

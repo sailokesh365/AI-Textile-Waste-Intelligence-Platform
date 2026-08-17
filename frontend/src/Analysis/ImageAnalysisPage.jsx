@@ -4,6 +4,7 @@ import Navbar from "../Shared/Navbar";
 import Footer from "../Shared/Footer";
 import ImageDropzone from "./ImageDropzone";
 import AnalysisResultCard from "./AnalysisResultCard";
+import { notify } from "../Shared/NotificationContext";
 
 const ImageAnalysisPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -29,6 +30,21 @@ const ImageAnalysisPage = () => {
       }
     };
     fetchMaterialsCatalog();
+
+    // Restore last analysis result from sessionStorage if returning from Report or other pages
+    const savedResult = sessionStorage.getItem("lastAnalysisResult");
+    if (savedResult) {
+      try {
+        const parsed = JSON.parse(savedResult);
+        if (parsed && parsed.prediction) {
+          setAnalysisResult(parsed);
+          setStatus("completed");
+          setStatusMessage("Restored analysis result from active session.");
+        }
+      } catch (e) {
+        console.warn("Failed to restore saved analysis result:", e);
+      }
+    }
   }, []);
 
   const handleFileSelect = (file) => {
@@ -43,6 +59,7 @@ const ImageAnalysisPage = () => {
     setStatus("idle");
     setError("");
     setAnalysisResult(null);
+    sessionStorage.removeItem("lastAnalysisResult");
   };
 
   const handleAnalyze = async () => {
@@ -131,11 +148,20 @@ const ImageAnalysisPage = () => {
           reusePotential: data.reusePotential,
           disposalRecommendation: data.disposalRecommendation,
           topPredictions: data.TopPredictions,
+          sustainabilityAnalysis: data.sustainabilityAnalysis,
         };
 
         setAnalysisResult(formattedResult);
+        sessionStorage.setItem("lastAnalysisResult", JSON.stringify(formattedResult));
         setStatus("completed");
         setStatusMessage("Analysis completed successfully.");
+
+        notify(
+          "AI Analysis Completed",
+          `Successfully classified ${data.Material} (${data.Confidence}% confidence).`,
+          "analysis",
+          `/report/${data._id}`
+        );
       } else {
         throw new Error(response.data?.message || "Failed to analyze image.");
       }
@@ -147,6 +173,12 @@ const ImageAnalysisPage = () => {
         err.message ||
         "An unexpected error occurred during AI image classification.";
       setError(errMsg);
+
+      notify(
+        "AI Analysis Failed",
+        errMsg,
+        "system"
+      );
     }
   };
 
@@ -155,6 +187,7 @@ const ImageAnalysisPage = () => {
     setStatus("idle");
     setError("");
     setAnalysisResult(null);
+    sessionStorage.removeItem("lastAnalysisResult");
   };
 
   const getMaterialColorStyle = (name) => {
@@ -204,6 +237,8 @@ const ImageAnalysisPage = () => {
           <ImageDropzone
             onFileSelect={handleFileSelect}
             selectedFile={selectedFile}
+            restoredImageUrl={analysisResult?.imageUrl}
+            restoredFileName={analysisResult?.uploadedFile?.originalname || `${analysisResult?.prediction?.predictedMaterial || 'Textile'} Scan Sample`}
             onClearFile={handleClearFile}
             onAnalyze={handleAnalyze}
             status={status}

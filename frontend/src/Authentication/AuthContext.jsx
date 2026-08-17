@@ -19,7 +19,8 @@ export const AuthProvider = ({ children }) => {
         setUser(response.data);
       } catch (error) {
         console.error("Token invalid or expired:", error);
-        localStorage.removeItem("token");
+        localStorage.clear();
+        sessionStorage.clear();
         setToken(null);
         setUser(null);
       } finally {
@@ -31,6 +32,10 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   const login = async (email, password) => {
+    // Purge any residual client cache before establishing new user session
+    localStorage.clear();
+    sessionStorage.clear();
+
     const response = await axiosInstance.post("/auth/login", { email, password });
     localStorage.setItem("token", response.data.token);
     setToken(response.data.token);
@@ -39,6 +44,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (name, email, password, role = "User") => {
+    localStorage.clear();
+    sessionStorage.clear();
+
     const response = await axiosInstance.post("/auth/register", {
       name,
       email,
@@ -52,7 +60,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
+    localStorage.clear();
+    sessionStorage.clear();
     setToken(null);
     setUser(null);
   };
@@ -60,6 +69,16 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = async (profileData) => {
     const response = await axiosInstance.put("/auth/profile", profileData);
     setUser(response.data);
+    return response.data;
+  };
+
+  const forgotPassword = async (email) => {
+    const response = await axiosInstance.post("/auth/forgot-password", { email });
+    return response.data;
+  };
+
+  const resetPassword = async (resetToken, newPassword) => {
+    const response = await axiosInstance.post("/auth/reset-password", { resetToken, newPassword });
     return response.data;
   };
 
@@ -74,6 +93,8 @@ export const AuthProvider = ({ children }) => {
         register,
         logout,
         updateProfile,
+        forgotPassword,
+        resetPassword,
       }}
     >
       {children}

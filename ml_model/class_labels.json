@@ -1,0 +1,14 @@
+{
+  "classes": [
+    "Defect-Free Fabric (Pristine)",
+    "Defected Fabric (Surface Anomaly)"
+  ],
+  "label_to_index": {
+    "Defect-Free Fabric (Pristine)": 0,
+    "Defected Fabric (Surface Anomaly)": 1
+  },
+  "index_to_label": {
+    "0": "Defect-Free Fabric (Pristine)",
+    "1": "Defected Fabric (Surface Anomaly)"
+  }
+}

@@ -3,6 +3,8 @@ import React, { useState, useRef, useEffect } from "react";
 const ImageDropzone = ({
   onFileSelect,
   selectedFile,
+  restoredImageUrl,
+  restoredFileName,
   onClearFile,
   onAnalyze,
   status,
@@ -15,16 +17,21 @@ const ImageDropzone = ({
   const [previewUrl, setPreviewUrl] = useState(null);
   const fileInputRef = useRef(null);
 
-  // Generate and clean up object URL for instant preview
+  // Generate and clean up object URL for instant preview or use restored URL
   useEffect(() => {
     if (selectedFile) {
       const url = URL.createObjectURL(selectedFile);
       setPreviewUrl(url);
       return () => URL.revokeObjectURL(url);
+    } else if (restoredImageUrl) {
+      const fullUrl = restoredImageUrl.startsWith("http")
+        ? restoredImageUrl
+        : `http://localhost:5000${restoredImageUrl}`;
+      setPreviewUrl(fullUrl);
     } else {
       setPreviewUrl(null);
     }
-  }, [selectedFile]);
+  }, [selectedFile, restoredImageUrl]);
 
   const validateAndHandleFile = (file) => {
     setError("");
@@ -105,7 +112,7 @@ const ImageDropzone = ({
   return (
     <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 md:p-8 transition-all">
       {/* Dropzone Container */}
-      {!selectedFile ? (
+      {!selectedFile && !restoredImageUrl ? (
         <div
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -182,15 +189,15 @@ const ImageDropzone = ({
             <div className="flex-1 w-full space-y-4">
               <div>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
-                  Ready for AI Analysis
+                  {selectedFile ? "Ready for AI Analysis" : "Active Session Sample Image"}
                 </span>
                 <h4 className="text-lg font-bold text-slate-900 mt-2 truncate">
-                  {selectedFile.name}
+                  {selectedFile ? selectedFile.name : (restoredFileName || "Uploaded Sample Image")}
                 </h4>
                 <div className="flex items-center space-x-3 text-xs text-slate-500 font-medium mt-1">
-                  <span>Size: {formatFileSize(selectedFile.size)}</span>
+                  <span>Size: {selectedFile ? formatFileSize(selectedFile.size) : "Standard Image"}</span>
                   <span>•</span>
-                  <span>Format: {(selectedFile.type || selectedFile.name.split('.').pop()).replace("image/", "").toUpperCase()}</span>
+                  <span>Format: {selectedFile ? (selectedFile.type || selectedFile.name.split('.').pop()).replace("image/", "").toUpperCase() : "IMAGE"}</span>
                 </div>
               </div>
 

@@ -18,4 +18,16 @@ axiosInstance.interceptors.request.use(
   }
 );
 
+// Add a response interceptor to handle 401 Unauthorized errors
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default axiosInstance;

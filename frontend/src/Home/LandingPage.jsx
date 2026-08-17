@@ -2,42 +2,40 @@ import React from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../Shared/Navbar";
 import Footer from "../Shared/Footer";
+import FlowingBackground from "../Authentication/FlowingBackground";
 
 const LandingPage = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+    <div className="min-h-screen flex flex-col bg-white text-slate-900">
       <Navbar />
 
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 text-white pt-20 pb-28">
-          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#2563EB_1px,transparent_1px)] [background-size:16px_16px]"></div>
-
+        {/* Hero Section with Soft Blue & White Flowing Background */}
+        <section className="relative overflow-hidden bg-gradient-to-b from-sky-50/70 via-white to-slate-50 text-slate-900 pt-24 pb-32">
+          <FlowingBackground className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none" isDark={false} />
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="text-center max-w-3xl mx-auto">
-
-
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight mb-6">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight mb-6 text-slate-900">
                 Transform Textile Waste Into{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-cyan-600 to-indigo-600">
                   Actionable Intelligence
                 </span>
               </h1>
 
-              <p className="text-lg sm:text-xl text-slate-300 mb-8 leading-relaxed">
+              <p className="text-lg sm:text-xl text-slate-600 mb-8 leading-relaxed font-medium">
                 Precision inventory management, batch traceability, and material categorization built for sustainable textile manufacturing and recycling ecosystems.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
                   to="/analysis"
-                  className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-blue-600/30 transition text-sm"
+                  className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/20 transition text-sm cursor-pointer"
                 >
                   Launch AI Analysis Engine
                 </Link>
                 <Link
                   to="/inventory"
-                  className="w-full sm:w-auto px-8 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold rounded-xl transition text-sm"
+                  className="w-full sm:w-auto px-8 py-3.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold rounded-xl shadow-xs transition text-sm cursor-pointer"
                 >
                   Launch Inventory Portal
                 </Link>
@@ -46,21 +44,21 @@ const LandingPage = () => {
 
             {/* Quick Metrics Banner */}
             <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              <div className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/60 rounded-2xl p-6 text-center">
-                <p className="text-3xl font-bold text-blue-400">100%</p>
-                <p className="text-xs font-medium text-slate-300 mt-1 uppercase tracking-wide">
+              <div className="bg-white/85 backdrop-blur-md border border-slate-200/80 rounded-2xl p-6 text-center shadow-md shadow-blue-500/5">
+                <p className="text-3xl font-bold text-blue-600">100%</p>
+                <p className="text-xs font-semibold text-slate-500 mt-1 uppercase tracking-wide">
                   Traceable Waste Batches
                 </p>
               </div>
-              <div className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/60 rounded-2xl p-6 text-center">
-                <p className="text-3xl font-bold text-green-400">10+ Fabrics</p>
-                <p className="text-xs font-medium text-slate-300 mt-1 uppercase tracking-wide">
+              <div className="bg-white/85 backdrop-blur-md border border-slate-200/80 rounded-2xl p-6 text-center shadow-md shadow-blue-500/5">
+                <p className="text-3xl font-bold text-emerald-600">10+ Fabrics</p>
+                <p className="text-xs font-semibold text-slate-500 mt-1 uppercase tracking-wide">
                   AI Material Categories
                 </p>
               </div>
-              <div className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/60 rounded-2xl p-6 text-center">
-                <p className="text-3xl font-bold text-blue-400">CNN</p>
-                <p className="text-xs font-medium text-slate-300 mt-1 uppercase tracking-wide">
+              <div className="bg-white/85 backdrop-blur-md border border-slate-200/80 rounded-2xl p-6 text-center shadow-md shadow-blue-500/5">
+                <p className="text-3xl font-bold text-blue-600">CNN</p>
+                <p className="text-xs font-semibold text-slate-500 mt-1 uppercase tracking-wide">
                   Deep Feature Extraction
                 </p>
               </div>

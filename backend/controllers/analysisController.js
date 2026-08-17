@@ -119,6 +119,11 @@ const getAnalysisById = async (req, res) => {
       return res.status(404).json({ success: false, message: "Analysis record not found" });
     }
 
+    const ownerId = analysis.createdBy?._id || analysis.createdBy;
+    if (!ownerId || ownerId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: "Not authorized to access this analysis record" });
+    }
+
     // Enrich with material knowledge profile
     const materialInfo = materialProfiles[analysis.predictedMaterial] || materialProfiles["Mixed Fabrics"];
 

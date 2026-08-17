@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./Authentication/AuthContext";
+import { NotificationProvider } from "./Shared/NotificationContext";
 import ProtectedRoute from "./Authentication/ProtectedRoute";
 
 import LandingPage from "./Home/LandingPage";
@@ -11,12 +12,17 @@ import InventoryDashboard from "./Inventory/InventoryDashboard";
 import ImageAnalysisPage from "./Analysis/ImageAnalysisPage";
 import HistoryPage from "./Analysis/HistoryPage";
 import Dashboard from "./Dashboard/Dashboard";
+import RecyclingFacilityDashboard from "./Dashboard/RecyclingFacilityDashboard";
+import SustainabilityManagerDashboard from "./Dashboard/SustainabilityManagerDashboard";
+import ManufacturerDashboard from "./Dashboard/ManufacturerDashboard";
+import AdminDashboard from "./Dashboard/AdminDashboard";
 import AnalysisReport from "./Analysis/AnalysisReport";
 
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <NotificationProvider>
+        <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
@@ -62,6 +68,38 @@ export default function App() {
             }
           />
           <Route
+            path="/dashboard/recycling"
+            element={
+              <ProtectedRoute>
+                <RecyclingFacilityDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/sustainability"
+            element={
+              <ProtectedRoute>
+                <SustainabilityManagerDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/manufacturer"
+            element={
+              <ProtectedRoute>
+                <ManufacturerDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/admin"
+            element={
+              <ProtectedRoute requiredRole="Admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/report/:id"
             element={
               <ProtectedRoute>
@@ -71,6 +109,7 @@ export default function App() {
           />
         </Routes>
       </BrowserRouter>
-    </AuthProvider>
+    </NotificationProvider>
+  </AuthProvider>
   );
 }
