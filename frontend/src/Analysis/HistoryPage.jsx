@@ -127,23 +127,23 @@ const HistoryPage = () => {
         ) : (
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-left border-collapse min-w-[980px]">
                 <thead>
                   <tr className="bg-slate-50/90 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                    <th className="py-4 px-5">Sample</th>
-                    <th className="py-4 px-5">Filename</th>
-                    <th className="py-4 px-5">Predicted Material</th>
-                    <th className="py-4 px-5">Confidence</th>
-                    <th className="py-4 px-5">Waste Category</th>
-                    <th className="py-4 px-5">Recyclability</th>
-                    <th className="py-4 px-5">Date</th>
-                    <th className="py-4 px-5 text-right whitespace-nowrap min-w-[170px]">Actions</th>
+                    <th className="py-3.5 px-4 sm:px-5 align-middle w-[72px]">Sample</th>
+                    <th className="py-3.5 px-4 sm:px-5 align-middle w-[18%]">Filename</th>
+                    <th className="py-3.5 px-4 sm:px-5 align-middle w-[22%]">Predicted Material</th>
+                    <th className="py-3.5 px-4 sm:px-5 align-middle w-[11%]">Confidence</th>
+                    <th className="py-3.5 px-4 sm:px-5 align-middle w-[20%]">Waste Category</th>
+                    <th className="py-3.5 px-4 sm:px-5 align-middle w-[12%]">Recyclability</th>
+                    <th className="py-3.5 px-4 sm:px-5 align-middle w-[10%]">Date</th>
+                    <th className="py-3.5 px-4 sm:px-5 align-middle text-right whitespace-nowrap min-w-[170px] w-[15%]">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-sm">
                   {filteredHistory.map((item) => (
                     <tr key={item._id} className="hover:bg-slate-50/80 transition-colors duration-150">
-                      <td className="py-4 px-5">
+                      <td className="py-3.5 px-4 sm:px-5 align-middle">
                         <img
                           src={
                             item.imagePath
@@ -156,21 +156,21 @@ const HistoryPage = () => {
                           className="w-11 h-11 object-cover rounded-xl border border-slate-200/80 shadow-2xs shrink-0"
                         />
                       </td>
-                      <td className="py-4 px-5 font-semibold text-slate-800 text-sm">
+                      <td className="py-3.5 px-4 sm:px-5 align-middle font-semibold text-slate-800 text-sm max-w-[180px] sm:max-w-[220px] truncate" title={item.originalName || "Textile Sample"}>
                         {item.originalName || "Textile Sample"}
                       </td>
-                      <td className="py-4 px-5 font-bold text-slate-900 text-sm tracking-tight">
+                      <td className="py-3.5 px-4 sm:px-5 align-middle font-bold text-slate-900 text-sm tracking-tight">
                         {item.predictedMaterial}
                       </td>
-                      <td className="py-4 px-5">
+                      <td className="py-3.5 px-4 sm:px-5 align-middle whitespace-nowrap">
                         <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200/60 tabular-nums inline-block">
                           {item.materialConfidence}%
                         </span>
                       </td>
-                      <td className="py-4 px-5 text-slate-700 font-medium text-xs sm:text-sm">
+                      <td className="py-3.5 px-4 sm:px-5 align-middle text-slate-700 font-medium text-xs sm:text-sm">
                         {item.wasteCategory}
                       </td>
-                      <td className="py-4 px-5">
+                      <td className="py-3.5 px-4 sm:px-5 align-middle whitespace-nowrap">
                         <span
                           className={`px-2.5 py-1 rounded-full text-[11px] font-bold border tabular-nums inline-block ${
                             item.recyclabilityGrade === "Green"
@@ -185,10 +185,10 @@ const HistoryPage = () => {
                           {item.recyclabilityScore}/100
                         </span>
                       </td>
-                      <td className="py-4 px-5 text-xs text-slate-500 font-medium tabular-nums whitespace-nowrap">
+                      <td className="py-3.5 px-4 sm:px-5 align-middle text-xs text-slate-500 font-medium tabular-nums whitespace-nowrap">
                         {new Date(item.createdAt).toLocaleDateString()}
                       </td>
-                      <td className="py-4 px-5 text-right whitespace-nowrap min-w-[170px] align-middle">
+                      <td className="py-3.5 px-4 sm:px-5 align-middle text-right whitespace-nowrap min-w-[170px]">
                         <div className="flex items-center justify-end gap-2 shrink-0">
                           <Link
                             to={`/report/${item._id}`}

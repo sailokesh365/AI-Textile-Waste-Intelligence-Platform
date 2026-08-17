@@ -15,7 +15,10 @@ const LandingPage = () => {
           <FlowingBackground className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none" isDark={false} />
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="text-center max-w-3xl mx-auto">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight mb-6 text-slate-900">
+              <h1
+                style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800 }}
+                className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight mb-6 text-slate-900"
+              >
                 Transform Textile Waste Into{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-cyan-600 to-indigo-600">
                   Actionable Intelligence

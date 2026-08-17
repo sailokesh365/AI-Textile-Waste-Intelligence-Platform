@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 @layer base {
@@ -108,10 +108,10 @@
     transform: translate(0px, 0px) scale(1) rotate(0deg);
   }
   33% {
-    transform: translate(30px, -20px) scale(1.03) rotate(1.5deg);
+    transform: translate(75px, -55px) scale(1.08) rotate(3.5deg);
   }
   66% {
-    transform: translate(-25px, 15px) scale(0.98) rotate(-1deg);
+    transform: translate(-65px, 45px) scale(0.93) rotate(-3deg);
   }
   100% {
     transform: translate(0px, 0px) scale(1) rotate(0deg);
@@ -123,7 +123,7 @@
     transform: translate(0px, 0px) scale(1) rotate(0deg);
   }
   50% {
-    transform: translate(-35px, 25px) scale(1.04) rotate(-2deg);
+    transform: translate(-85px, 65px) scale(1.1) rotate(-4.5deg);
   }
   100% {
     transform: translate(0px, 0px) scale(1) rotate(0deg);
@@ -132,12 +132,21 @@
 
 @keyframes pulseTrailGlow {
   0%, 100% {
-    opacity: 0.6;
+    opacity: 0.55;
     filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.4));
   }
   50% {
     opacity: 0.95;
-    filter: drop-shadow(0 0 25px rgba(56, 189, 248, 0.8));
+    filter: drop-shadow(0 0 28px rgba(56, 189, 248, 0.85));
+  }
+}
+
+@keyframes strokeFlow {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -200;
   }
 }
 
@@ -150,23 +159,27 @@
 }
 
 .animate-diagonal-flow {
-  animation: slowTrailFlow 28s ease-in-out infinite;
+  animation: slowTrailFlow 7s ease-in-out infinite;
 }
 
 .animate-diagonal-flow-reverse {
-  animation: slowTrailFlowReverse 34s ease-in-out infinite;
+  animation: slowTrailFlowReverse 9s ease-in-out infinite;
 }
 
 .animate-trail-slow {
-  animation: slowTrailFlow 30s ease-in-out infinite;
+  animation: slowTrailFlow 7s ease-in-out infinite;
 }
 
 .animate-trail-reverse {
-  animation: slowTrailFlowReverse 36s ease-in-out infinite;
+  animation: slowTrailFlowReverse 9s ease-in-out infinite;
 }
 
 .animate-pulse-glow {
-  animation: pulseTrailGlow 16s ease-in-out infinite;
+  animation: pulseTrailGlow 4.5s ease-in-out infinite;
+}
+
+.animate-stroke-flow {
+  animation: strokeFlow 4s linear infinite;
 }
 
 

@@ -139,7 +139,7 @@ const InventoryDashboard = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <div className="flex items-center space-x-3">
-              <h1 className="text-2xl font-bold text-slate-900">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
                 Textile Waste Inventory Management
               </h1>
             </div>

@@ -1,7 +1,7 @@
 import React from "react";
 
 const FlowingBackground = ({
-  className = "fixed inset-0 pointer-events-none -z-10 overflow-hidden bg-white select-none",
+  className = "fixed inset-0 pointer-events-none z-0 overflow-hidden select-none",
   isDark = false,
 }) => {
   return (
@@ -11,7 +11,7 @@ const FlowingBackground = ({
         className={`absolute inset-0 ${
           isDark
             ? "bg-slate-950"
-            : "bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-100/70 via-white to-sky-50/50"
+            : "bg-[radial-gradient(ellipse_at_top,rgba(224,242,254,0.7)_0%,rgba(255,255,255,1)_50%,rgba(240,249,255,0.5)_100%)]"
         }`}
       ></div>
 
@@ -98,6 +98,7 @@ const FlowingBackground = ({
             strokeWidth="1.2"
             strokeDasharray="12 8"
             opacity="0.6"
+            className="animate-stroke-flow"
           />
         </svg>
       </div>
@@ -157,7 +158,7 @@ const FlowingBackground = ({
         className={`absolute inset-0 pointer-events-none ${
           isDark
             ? "bg-radial from-slate-950/80 via-slate-950/50 to-slate-950"
-            : "bg-[radial-gradient(circle_at_50%_40%,_rgba(255,255,255,0.7)_0%,_rgba(255,255,255,0.4)_50%,_rgba(240,249,255,0.15)_100%)]"
+            : "bg-[radial-gradient(circle_at_50%_40%,rgba(255,255,255,0.6)_0%,rgba(255,255,255,0.3)_50%,rgba(240,249,255,0.1)_100%)]"
         }`}
       ></div>
     </div>
