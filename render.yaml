@@ -1,0 +1,74 @@
+# ==============================================================================
+# Render Blueprint Specification: AI Textile Waste Intelligence Platform
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. AI Microservice (FastAPI + OpenCV + TensorFlow CNN)
+  # Requires at least 2 GB RAM (Standard Plan) for TensorFlow 2.16 model inference
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: ai-textile-ai-service
+    runtime: docker
+    dockerfilePath: ./ml_model/Dockerfile
+    dockerContext: ./ml_model
+    plan: standard
+    healthCheckPath: /health
+    envVars:
+      - key: ANALYSIS_MODE
+        value: real
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 10000
+
+  # ----------------------------------------------------------------------------
+  # 2. Backend REST API Service (Node.js Express)
+  # Free tier web service (ephemeral container storage for /app/uploads)
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: ai-textile-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      # Enter your MongoDB Atlas connection string during Blueprint setup
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: AI_SERVER_URL
+        fromService:
+          type: web
+          name: ai-textile-ai-service
+          property: host
+      - key: CORS_ORIGIN
+        value: "*"
+
+  # ----------------------------------------------------------------------------
+  # 3. Frontend Web Service (React Vite SPA)
+  # Free static site with global CDN and SPA client-side routing rewrites
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: ai-textile-frontend
+    runtime: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: ai-textile-backend
+          property: host
+          path: /api
+      - key: VITE_SERVER_BASE_URL
+        fromService:
+          type: web
+          name: ai-textile-backend
+          property: host

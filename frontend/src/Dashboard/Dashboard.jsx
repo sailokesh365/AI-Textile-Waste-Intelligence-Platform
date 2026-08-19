@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import axiosInstance from "../Shared/axiosInstance";
+import axiosInstance, { getImageUrl } from "../Shared/axiosInstance";
 import { useAuth } from "../Authentication/AuthContext";
 import Navbar from "../Shared/Navbar";
 import Footer from "../Shared/Footer";
@@ -768,12 +768,7 @@ const Dashboard = () => {
                   <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
                     {history.map((item, idx) => {
                       if (!item) return null;
-                      const imageSrc =
-                        item.imagePath && typeof item.imagePath === "string"
-                          ? item.imagePath.startsWith("http")
-                            ? item.imagePath
-                            : `http://localhost:5000${item.imagePath}`
-                          : "/placeholder.png";
+                      const imageSrc = getImageUrl(item.imagePath);
 
                       const formattedDate = item.createdAt
                         ? new Date(item.createdAt).toLocaleDateString()

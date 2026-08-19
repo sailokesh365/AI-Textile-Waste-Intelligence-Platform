@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import axiosInstance from "../Shared/axiosInstance";
+import axiosInstance, { getImageUrl } from "../Shared/axiosInstance";
 import Navbar from "../Shared/Navbar";
 import Footer from "../Shared/Footer";
 
@@ -145,13 +145,7 @@ const HistoryPage = () => {
                     <tr key={item._id} className="hover:bg-slate-50/80 transition-colors duration-150">
                       <td className="py-3.5 px-4 sm:px-5 align-middle">
                         <img
-                          src={
-                            item.imagePath
-                              ? item.imagePath.startsWith("http")
-                                ? item.imagePath
-                                : `http://localhost:5000${item.imagePath}`
-                              : "/placeholder.png"
-                          }
+                          src={getImageUrl(item.imagePath)}
                           alt={item.predictedMaterial}
                           className="w-11 h-11 object-cover rounded-xl border border-slate-200/80 shadow-2xs shrink-0"
                         />

@@ -1,13 +1,21 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const path = require("path");
+const fs = require("fs");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const inventoryRoutes = require("./routes/inventoryRoutes");
 const analysisRoutes = require("./routes/analysisRoutes");
-const path = require("path");
 
-dotenv.config();
+// Load environment variables from backend/.env or root
+dotenv.config({ path: path.join(__dirname, ".env") });
+
+// Ensure uploads directory exists on server startup
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 // Connect Database
 connectDB();
@@ -15,7 +23,8 @@ connectDB();
 const app = express();
 
 // Middleware
-app.use(cors());
+const corsOrigin = process.env.CORS_ORIGIN || "*";
+app.use(cors({ origin: corsOrigin === "*" ? true : corsOrigin, credentials: true }));
 app.use(express.json());
 
 // Request logger middleware
@@ -25,7 +34,7 @@ app.use((req, res, next) => {
 });
 
 // Serve Static Uploaded Images
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(uploadsDir));
 
 // Routes
 app.use("/api/auth", authRoutes);

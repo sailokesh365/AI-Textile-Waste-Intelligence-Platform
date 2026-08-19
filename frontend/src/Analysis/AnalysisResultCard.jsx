@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { generatePdfReport } from "./utils/generatePdfReport";
+import { getImageUrl } from "../Shared/axiosInstance";
 import { Bar, Doughnut } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -48,18 +49,14 @@ const AnalysisResultCard = ({ result, onReset }) => {
   const recordId = result._id || prediction._id;
 
   const rawImageUrl = imageUrl || prediction?.imageUrl || "/placeholder.jpg";
-  const fullImageUrl = rawImageUrl.startsWith("http")
-    ? rawImageUrl
-    : `http://localhost:5000${rawImageUrl}`;
+  const fullImageUrl = getImageUrl(rawImageUrl);
 
   const preprocessedUrl =
     result.preprocessedImageUrl ||
     result.preprocessedImagePath ||
     prediction?.preprocessedImagePath ||
     rawImageUrl;
-  const fullPreprocessedUrl = preprocessedUrl.startsWith("http")
-    ? preprocessedUrl
-    : `http://localhost:5000${preprocessedUrl}`;
+  const fullPreprocessedUrl = getImageUrl(preprocessedUrl);
 
   const getConfidenceBadgeStyle = (score) => {
     if (score >= 90) return "bg-green-100 text-green-800 border-green-300";

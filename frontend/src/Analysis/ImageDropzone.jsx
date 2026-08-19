@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { getImageUrl } from "../Shared/axiosInstance";
 
 const ImageDropzone = ({
   onFileSelect,
@@ -24,9 +25,7 @@ const ImageDropzone = ({
       setPreviewUrl(url);
       return () => URL.revokeObjectURL(url);
     } else if (restoredImageUrl) {
-      const fullUrl = restoredImageUrl.startsWith("http")
-        ? restoredImageUrl
-        : `http://localhost:5000${restoredImageUrl}`;
+      const fullUrl = getImageUrl(restoredImageUrl);
       setPreviewUrl(fullUrl);
     } else {
       setPreviewUrl(null);

@@ -298,7 +298,11 @@ const classifyTextileImage = async (file) => {
     throw new Error("No image file provided for analysis.");
   }
 
-  const aiServerUrl = process.env.AI_SERVER_URL || "http://127.0.0.1:8000";
+  let aiServerUrl = process.env.AI_SERVER_URL || "http://127.0.0.1:8000";
+  if (!aiServerUrl.startsWith("http://") && !aiServerUrl.startsWith("https://")) {
+    aiServerUrl = `https://${aiServerUrl}`;
+  }
+  aiServerUrl = aiServerUrl.replace(/\/+$/, "");
   console.log(`[AI Proxy] Attempting FastAPI microservice connection at: ${aiServerUrl}/predict`);
 
   try {

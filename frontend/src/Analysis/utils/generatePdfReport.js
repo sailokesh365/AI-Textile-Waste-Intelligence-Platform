@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { notify } from "../../Shared/NotificationContext";
+import { getImageUrl } from "../../Shared/axiosInstance";
 
 /**
  * Converts an image URL to a base64 data URL safely.
@@ -9,9 +10,7 @@ import { notify } from "../../Shared/NotificationContext";
 const getBase64ImageFromUrl = async (imgUrl) => {
   if (!imgUrl) return null;
   try {
-    const fullUrl = imgUrl.startsWith("http")
-      ? imgUrl
-      : `http://localhost:5000${imgUrl.startsWith("/") ? "" : "/"}${imgUrl}`;
+    const fullUrl = getImageUrl(imgUrl);
 
     return await new Promise((resolve) => {
       const img = new Image();

@@ -1,0 +1,101 @@
+services:
+  # Database Service: MongoDB
+  mongodb:
+    image: mongo:7.0
+    container_name: textile-mongodb
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - textile-net
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval \"db.adminCommand('ping')\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # AI Microservice: FastAPI + OpenCV + TensorFlow Inference
+  ai-service:
+    build:
+      context: ./ml_model
+      dockerfile: Dockerfile
+    container_name: textile-ai-service
+    restart: unless-stopped
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - ANALYSIS_MODE=${ANALYSIS_MODE:-demo}
+    networks:
+      - textile-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # REST API Backend Service: Node.js Express
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: textile-backend
+    restart: unless-stopped
+    environment:
+      - PORT=5000
+      - MONGO_URI=mongodb://mongodb:27017/textile_waste_db
+      - JWT_SECRET=${JWT_SECRET:-TextileWaste@2026_ProdSecret}
+      - AI_SERVER_URL=http://ai-service:8000
+      - CORS_ORIGIN=*
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      ai-service:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - textile-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Frontend Web Service: Nginx serving React Vite SPA
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=/api
+        - VITE_SERVER_BASE_URL=
+    container_name: textile-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - textile-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80/"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+# Persistent Volumes
+volumes:
+  mongo_data:
+    driver: local
+  uploads_data:
+    driver: local
+
+# Private Bridge Network
+networks:
+  textile-net:
+    driver: bridge

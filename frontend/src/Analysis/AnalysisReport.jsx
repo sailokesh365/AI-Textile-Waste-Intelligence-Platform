@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import axiosInstance from "../Shared/axiosInstance";
+import axiosInstance, { getImageUrl } from "../Shared/axiosInstance";
 import Navbar from "../Shared/Navbar";
 import Footer from "../Shared/Footer";
 import { Bar, Doughnut } from "react-chartjs-2";
@@ -187,15 +187,11 @@ const AnalysisReport = () => {
     timeStyle: "medium",
   });
 
-  const fullOriginalUrl = report.imagePath.startsWith("http")
-    ? report.imagePath
-    : `http://localhost:5000${report.imagePath}`;
+  const fullOriginalUrl = getImageUrl(report.imagePath);
 
   const rawPreprocessed = report.preprocessedImageUrl || report.preprocessedImagePath || report.imagePath;
   const fullPreprocessedUrl = rawPreprocessed
-    ? rawPreprocessed.startsWith("http")
-      ? rawPreprocessed
-      : `http://localhost:5000${rawPreprocessed}`
+    ? getImageUrl(rawPreprocessed)
     : fullOriginalUrl;
 
   // Sustainability Metrics Calculation
