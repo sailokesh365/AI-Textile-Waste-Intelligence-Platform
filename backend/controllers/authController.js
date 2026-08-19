@@ -13,6 +13,7 @@ const generateToken = (id, role) => {
 const registerUser = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
+    console.log(`[Auth] Registration attempt for email: ${email}`);
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: "Please provide name, email, and password" });
@@ -30,6 +31,7 @@ const registerUser = async (req, res) => {
 
     const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
+      console.log(`[Auth] Registration rejected - user already exists: ${normalizedEmail}`);
       return res.status(400).json({ message: "User already exists" });
     }
 
@@ -46,6 +48,7 @@ const registerUser = async (req, res) => {
     });
 
     const token = generateToken(user._id, user.role);
+    console.log(`[Auth] User registered successfully: ${normalizedEmail} (ID: ${user._id})`);
 
     res.status(201).json({
       message: "User registered successfully",
@@ -58,13 +61,15 @@ const registerUser = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("[Auth Error] Registration error:", error);
+    res.status(500).json({ message: error.message || "Registration failed on server" });
   }
 };
 
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log(`[Auth] Login attempt for email: ${email}`);
 
     if (!email || !password) {
       return res.status(400).json({ message: "Please provide email and password" });
@@ -74,15 +79,18 @@ const loginUser = async (req, res) => {
 
     const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
+      console.log(`[Auth] Login failed - user not found: ${normalizedEmail}`);
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      console.log(`[Auth] Login failed - incorrect password for: ${normalizedEmail}`);
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
     const token = generateToken(user._id, user.role);
+    console.log(`[Auth] User logged in successfully: ${normalizedEmail} (ID: ${user._id})`);
 
     res.status(200).json({
       message: "Login successful",
@@ -95,7 +103,8 @@ const loginUser = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("[Auth Error] Login error:", error);
+    res.status(500).json({ message: error.message || "Login failed on server" });
   }
 };
 
@@ -107,7 +116,8 @@ const getUserProfile = async (req, res) => {
     }
     res.status(200).json(user);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("[Auth Error] getUserProfile error:", error);
+    res.status(500).json({ message: error.message || "Failed to retrieve profile" });
   }
 };
 
@@ -134,7 +144,8 @@ const updateUserProfile = async (req, res) => {
       role: updatedUser.role,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("[Auth Error] updateUserProfile error:", error);
+    res.status(500).json({ message: error.message || "Failed to update profile" });
   }
 };
 
@@ -165,7 +176,8 @@ const forgotPassword = async (req, res) => {
       resetToken,
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    console.error("[Auth Error] forgotPassword error:", error);
+    return res.status(500).json({ message: error.message || "Failed to process password reset request" });
   }
 };
 
@@ -201,6 +213,7 @@ const resetPassword = async (req, res) => {
       message: "Password reset successfully. You can now sign in with your new password.",
     });
   } catch (error) {
+    console.error("[Auth Error] resetPassword error:", error);
     return res.status(400).json({ message: error.message || "Invalid or expired reset token." });
   }
 };

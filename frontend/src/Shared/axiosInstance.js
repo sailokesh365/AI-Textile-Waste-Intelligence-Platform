@@ -1,10 +1,15 @@
 import axios from "axios";
 
+// Normalize API Base URL
 const rawApiUrl = (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api").trim();
-export const API_BASE_URL =
-  rawApiUrl.startsWith("http://") || rawApiUrl.startsWith("https://") || rawApiUrl.startsWith("/")
-    ? rawApiUrl
-    : `https://${rawApiUrl}${rawApiUrl.endsWith("/api") ? "" : "/api"}`;
+
+export const API_BASE_URL = (() => {
+  let url = rawApiUrl;
+  if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("/")) {
+    url = `https://${url}`;
+  }
+  return url.replace(/\/+$/, "");
+})();
 
 const rawServerUrl = (
   import.meta.env.VITE_SERVER_BASE_URL ||
@@ -13,10 +18,13 @@ const rawServerUrl = (
     : API_BASE_URL.replace(/\/api\/?$/, ""))
 ).trim();
 
-export const SERVER_BASE_URL =
-  rawServerUrl.startsWith("http://") || rawServerUrl.startsWith("https://") || rawServerUrl === ""
-    ? rawServerUrl
-    : `https://${rawServerUrl}`;
+export const SERVER_BASE_URL = (() => {
+  let url = rawServerUrl;
+  if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
+    url = `https://${url}`;
+  }
+  return url.replace(/\/+$/, "");
+})();
 
 export const getImageUrl = (imagePath) => {
   if (!imagePath || typeof imagePath !== "string") return "/placeholder.png";
@@ -45,9 +53,7 @@ axiosInstance.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 // Add a response interceptor to handle 401 Unauthorized errors

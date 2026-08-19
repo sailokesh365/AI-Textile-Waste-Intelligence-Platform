@@ -3,6 +3,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
 const fs = require("fs");
+const mongoose = require("mongoose");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const inventoryRoutes = require("./routes/inventoryRoutes");
@@ -22,9 +23,17 @@ connectDB();
 
 const app = express();
 
-// Middleware
-const corsOrigin = process.env.CORS_ORIGIN || "*";
-app.use(cors({ origin: corsOrigin === "*" ? true : corsOrigin, credentials: true }));
+// Comprehensive CORS Configuration
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+  })
+);
+app.options("*", cors());
+
 app.use(express.json());
 
 // Request logger middleware
@@ -36,27 +45,46 @@ app.use((req, res, next) => {
 // Serve Static Uploaded Images
 app.use("/uploads", express.static(uploadsDir));
 
-// Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/inventory", inventoryRoutes);
-app.use("/api/analysis", analysisRoutes);
-app.use("/api/upload", require("./routes/uploadRoutes"));
-app.use("/api/analyze", require("./routes/analyzeRoutes"));
-app.use("/api/materials", require("./routes/materialsRoutes"));
-app.use("/api/classification", require("./routes/classificationRoutes"));
-app.use("/api/predict", require("./routes/predictRoutes"));
-app.use("/api/history", require("./routes/historyRoutes"));
-app.use("/api/sustainability", require("./sustainability/routes/sustainabilityRoutes"));
-app.use("/api/recommendation", require("./recommendation/routes/recommendationRoutes"));
+// Register all modular routers under BOTH /api/* and root /* for universal client compatibility
+const routeModules = [
+  { path: "/auth", router: authRoutes },
+  { path: "/inventory", router: inventoryRoutes },
+  { path: "/analysis", router: analysisRoutes },
+  { path: "/upload", router: require("./routes/uploadRoutes") },
+  { path: "/analyze", router: require("./routes/analyzeRoutes") },
+  { path: "/materials", router: require("./routes/materialsRoutes") },
+  { path: "/classification", router: require("./routes/classificationRoutes") },
+  { path: "/predict", router: require("./routes/predictRoutes") },
+  { path: "/history", router: require("./routes/historyRoutes") },
+  { path: "/sustainability", router: require("./sustainability/routes/sustainabilityRoutes") },
+  { path: "/recommendation", router: require("./recommendation/routes/recommendationRoutes") },
+];
 
-
-
-// Health check route
-app.get("/api/health", (req, res) => {
-  res.status(200).json({ status: "OK", message: "Backend is running smoothly" });
+routeModules.forEach(({ path: routePath, router }) => {
+  app.use(`/api${routePath}`, router);
+  app.use(routePath, router);
 });
 
-// Default Route
+// Universal Health check routes
+app.get(["/health", "/api/health"], (req, res) => {
+  const dbState = mongoose.connection.readyState;
+  const dbStatusMap = {
+    0: "disconnected",
+    1: "connected",
+    2: "connecting",
+    3: "disconnecting",
+  };
+  const isHealthy = dbState === 1;
+
+  res.status(isHealthy ? 200 : 503).json({
+    status: isHealthy ? "OK" : "DEGRADED",
+    message: isHealthy ? "Backend and Database are running smoothly" : "Database connection in progress or disconnected",
+    database: dbStatusMap[dbState] || "unknown",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Default Root Route
 app.get("/", (req, res) => {
   res.send("AI Textile Waste Intelligence Platform Backend Running 🚀");
 });
