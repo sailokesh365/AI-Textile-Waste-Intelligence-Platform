@@ -2,7 +2,10 @@ import os
 import cv2
 import numpy as np
 import base64
-from inference_pipeline import TextileInferencePipeline
+try:
+    from inference_pipeline import TextileInferencePipeline
+except ImportError:
+    from ml_model.inference_pipeline import TextileInferencePipeline
 
 _PIPELINE = None
 
