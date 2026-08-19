@@ -62,13 +62,6 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_BASE_URL
-        fromService:
-          type: web
-          name: ai-textile-backend
-          property: host
-          path: /api
+        value: https://ai-textile-backend.onrender.com/api
       - key: VITE_SERVER_BASE_URL
-        fromService:
-          type: web
-          name: ai-textile-backend
-          property: host
+        value: https://ai-textile-backend.onrender.com

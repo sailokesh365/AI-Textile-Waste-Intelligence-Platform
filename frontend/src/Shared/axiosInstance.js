@@ -1,25 +1,32 @@
 import axios from "axios";
 
-// Normalize API Base URL with robust production fallback
+// Default Production Backend REST API URL
+const LIVE_PROD_API_URL = "https://ai-textile-backend.onrender.com/api";
+const LIVE_PROD_SERVER_URL = "https://ai-textile-backend.onrender.com";
+
+// Resolve API Base URL with strict production target
 const getResolvedApiUrl = () => {
   const envUrl = (import.meta.env.VITE_API_BASE_URL || "").trim();
-  if (envUrl) {
-    let url = envUrl;
-    if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("/")) {
-      url = `https://${url}`;
-    }
-    return url.replace(/\/+$/, "");
-  }
 
-  // Runtime fallback when deployed to production domain without build-time VITE_API_BASE_URL
-  if (typeof window !== "undefined" && window.location && window.location.hostname) {
-    const host = window.location.hostname;
-    if (host !== "localhost" && host !== "127.0.0.1") {
-      return "https://ai-textile-backend.onrender.com/api";
+  // If running in development on localhost
+  if (typeof window !== "undefined" && window.location) {
+    const hostname = window.location.hostname;
+    const isLocalhost = hostname === "localhost" || hostname === "127.0.0.1";
+    if (isLocalhost && !import.meta.env.PROD) {
+      if (envUrl && (envUrl.includes("localhost") || envUrl.includes("127.0.0.1"))) {
+        return envUrl.replace(/\/+$/, "");
+      }
+      return "http://localhost:5000/api";
     }
   }
 
-  return "http://localhost:5000/api";
+  // If explicit HTTPS API URL provided
+  if (envUrl && envUrl.startsWith("https://")) {
+    return envUrl.replace(/\/+$/, "");
+  }
+
+  // Always use the live production backend API URL in deployed builds
+  return LIVE_PROD_API_URL;
 };
 
 export const API_BASE_URL = getResolvedApiUrl();
@@ -32,11 +39,18 @@ const rawServerUrl = (
 ).trim();
 
 export const SERVER_BASE_URL = (() => {
-  let url = rawServerUrl;
-  if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
-    url = `https://${url}`;
+  if (rawServerUrl && rawServerUrl.startsWith("https://")) {
+    return rawServerUrl.replace(/\/+$/, "");
   }
-  return url.replace(/\/+$/, "");
+  if (
+    typeof window !== "undefined" &&
+    window.location &&
+    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") &&
+    !import.meta.env.PROD
+  ) {
+    return "http://localhost:5000";
+  }
+  return LIVE_PROD_SERVER_URL;
 })();
 
 export const getImageUrl = (imagePath) => {
