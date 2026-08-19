@@ -12,7 +12,7 @@ services:
     runtime: docker
     dockerfilePath: ./ml_model/Dockerfile
     dockerContext: ./ml_model
-    plan: standard
+    plan: free
     healthCheckPath: /health
     envVars:
       - key: ANALYSIS_MODE
