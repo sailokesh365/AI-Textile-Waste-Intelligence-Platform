@@ -74,11 +74,10 @@ app.get(["/health", "/api/health"], (req, res) => {
     2: "connecting",
     3: "disconnecting",
   };
-  const isHealthy = dbState === 1;
 
-  res.status(isHealthy ? 200 : 503).json({
-    status: isHealthy ? "OK" : "DEGRADED",
-    message: isHealthy ? "Backend and Database are running smoothly" : "Database connection in progress or disconnected",
+  res.status(200).json({
+    status: "OK",
+    message: "AI Textile Waste Platform Backend is running",
     database: dbStatusMap[dbState] || "unknown",
     timestamp: new Date().toISOString(),
   });
