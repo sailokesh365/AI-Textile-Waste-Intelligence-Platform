@@ -1,15 +1,28 @@
 import axios from "axios";
 
-// Normalize API Base URL
-const rawApiUrl = (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api").trim();
-
-export const API_BASE_URL = (() => {
-  let url = rawApiUrl;
-  if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("/")) {
-    url = `https://${url}`;
+// Normalize API Base URL with robust production fallback
+const getResolvedApiUrl = () => {
+  const envUrl = (import.meta.env.VITE_API_BASE_URL || "").trim();
+  if (envUrl) {
+    let url = envUrl;
+    if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("/")) {
+      url = `https://${url}`;
+    }
+    return url.replace(/\/+$/, "");
   }
-  return url.replace(/\/+$/, "");
-})();
+
+  // Runtime fallback when deployed to production domain without build-time VITE_API_BASE_URL
+  if (typeof window !== "undefined" && window.location && window.location.hostname) {
+    const host = window.location.hostname;
+    if (host !== "localhost" && host !== "127.0.0.1") {
+      return "https://ai-textile-backend.onrender.com/api";
+    }
+  }
+
+  return "http://localhost:5000/api";
+};
+
+export const API_BASE_URL = getResolvedApiUrl();
 
 const rawServerUrl = (
   import.meta.env.VITE_SERVER_BASE_URL ||
@@ -42,6 +55,7 @@ export const getImageUrl = (imagePath) => {
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 20000,
 });
 
 // Add a request interceptor to attach JWT token

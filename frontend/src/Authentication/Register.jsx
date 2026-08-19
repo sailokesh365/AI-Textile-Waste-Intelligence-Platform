@@ -80,11 +80,25 @@ const Register = () => {
       await register(name.trim(), email.trim(), password, role);
       navigate("/");
     } catch (err) {
-      const serverMsg = err.response?.data?.message;
-      if (serverMsg === "User already exists") {
+      console.error("[Register Error]", err);
+      const serverMsg =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        (typeof err.response?.data === "string" && err.response.data.length < 200 ? err.response.data : null);
+
+      if (
+        serverMsg === "User already exists" ||
+        (err.response?.status === 400 && typeof serverMsg === "string" && serverMsg.toLowerCase().includes("already exists"))
+      ) {
         setError("An account with this email address already exists. Please sign in or use another email.");
+      } else if (serverMsg) {
+        setError(serverMsg);
+      } else if (err.code === "ERR_NETWORK" || err.message?.includes("Network Error")) {
+        setError("Unable to connect to the authentication server. Please verify the network connection or try again shortly.");
+      } else if (err.response?.status === 503) {
+        setError("Authentication service or database is temporarily unavailable. Please try again in a moment.");
       } else {
-        setError(serverMsg || "Registration failed. Please verify your details and try again.");
+        setError(err.message || "Registration failed. Please verify your details and try again.");
       }
     } finally {
       setSubmitting(false);

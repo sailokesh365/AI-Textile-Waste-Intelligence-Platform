@@ -89,11 +89,22 @@ const Login = () => {
       const from = location.state?.from || "/";
       navigate(from);
     } catch (err) {
-      const serverMsg = err.response?.data?.message;
+      console.error("[Login Error]", err);
+      const serverMsg =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        (typeof err.response?.data === "string" && err.response.data.length < 200 ? err.response.data : null);
+
       if (serverMsg === "Invalid email or password") {
         setError("Invalid email or password. Please check your credentials and try again.");
+      } else if (serverMsg) {
+        setError(serverMsg);
+      } else if (err.code === "ERR_NETWORK" || err.message?.includes("Network Error")) {
+        setError("Unable to connect to the authentication server. Please verify the network connection or try again shortly.");
+      } else if (err.response?.status === 503) {
+        setError("Authentication service or database is temporarily unavailable. Please try again in a moment.");
       } else {
-        setError(serverMsg || "Authentication failed. Please verify your credentials and try again.");
+        setError(err.message || "Authentication failed. Please verify your credentials and try again.");
       }
     } finally {
       setSubmitting(false);

@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -12,8 +13,15 @@ const generateToken = (id, role) => {
 
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role } = req.body || {};
     console.log(`[Auth] Registration attempt for email: ${email}`);
+
+    if (mongoose.connection.readyState !== 1) {
+      console.warn(`[Auth Warning] Database not connected (readyState: ${mongoose.connection.readyState}) during registration attempt.`);
+      return res.status(503).json({
+        message: "Database service is currently unavailable or reconnecting. Please verify MONGO_URI or try again shortly.",
+      });
+    }
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: "Please provide name, email, and password" });
@@ -62,14 +70,35 @@ const registerUser = async (req, res) => {
     });
   } catch (error) {
     console.error("[Auth Error] Registration error:", error);
+
+    if (error.code === 11000) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+    if (error.name === "ValidationError") {
+      const firstError = Object.values(error.errors)[0]?.message || "Validation error";
+      return res.status(400).json({ message: firstError });
+    }
+    if (error.name === "MongooseError" || error.name === "MongoServerSelectionError" || error.message?.includes("buffering timed out")) {
+      return res.status(503).json({
+        message: "Database connection timed out. Please check database connectivity.",
+      });
+    }
+
     res.status(500).json({ message: error.message || "Registration failed on server" });
   }
 };
 
 const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body || {};
     console.log(`[Auth] Login attempt for email: ${email}`);
+
+    if (mongoose.connection.readyState !== 1) {
+      console.warn(`[Auth Warning] Database not connected (readyState: ${mongoose.connection.readyState}) during login attempt.`);
+      return res.status(503).json({
+        message: "Database service is currently unavailable or reconnecting. Please verify MONGO_URI or try again shortly.",
+      });
+    }
 
     if (!email || !password) {
       return res.status(400).json({ message: "Please provide email and password" });
@@ -104,12 +133,20 @@ const loginUser = async (req, res) => {
     });
   } catch (error) {
     console.error("[Auth Error] Login error:", error);
+    if (error.name === "MongooseError" || error.name === "MongoServerSelectionError" || error.message?.includes("buffering timed out")) {
+      return res.status(503).json({
+        message: "Database connection timed out. Please check database connectivity.",
+      });
+    }
     res.status(500).json({ message: error.message || "Login failed on server" });
   }
 };
 
 const getUserProfile = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ message: "Database connection unavailable." });
+    }
     const user = await User.findById(req.user._id).select("-password");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -123,6 +160,9 @@ const getUserProfile = async (req, res) => {
 
 const updateUserProfile = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ message: "Database connection unavailable." });
+    }
     const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -151,9 +191,13 @@ const updateUserProfile = async (req, res) => {
 
 const forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email } = req.body || {};
     if (!email) {
       return res.status(400).json({ message: "Please provide your email address." });
+    }
+
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ message: "Database connection unavailable. Please try again shortly." });
     }
 
     const normalizedEmail = email.trim().toLowerCase();
@@ -183,10 +227,14 @@ const forgotPassword = async (req, res) => {
 
 const resetPassword = async (req, res) => {
   try {
-    const { resetToken, email, newPassword } = req.body;
+    const { resetToken, email, newPassword } = req.body || {};
 
     if (!newPassword || newPassword.length < 8) {
       return res.status(400).json({ message: "New password must be at least 8 characters long." });
+    }
+
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ message: "Database connection unavailable. Please try again shortly." });
     }
 
     let user = null;
